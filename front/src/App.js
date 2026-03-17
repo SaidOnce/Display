@@ -1,29 +1,39 @@
 import "tailwindcss/tailwind.css"
+import Login from "./Login"
+import { useState } from "react"
+import Displaydd from "./DisplayAdd"
+
+const btnHeaderStyle = "px-6 text-4xl border-x-2 border-black" 
 
 export default function App() {
+  const [page, setPage] = useState("login")
+  
 
-  const send = () => {
-
-    fetch("http://localhost:5000/api",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify({
-        text: "text"
-      })
-    })
-    .then(res=>res.json())
-    .then(data=>console.log(data.answer))
-
+  const renderPage = () => {
+    if (page === "login") return <Login />
+    if (page === "displayadd") return <Displaydd />
   }
+  
 
   return (
-    <div className="flex justify-center">
-      <div className="mt-2">
-        <button onClick={()=>send()} className="border-2 border-black px-4 py-2">
-          SEND AND RECIVE
-        </button>
+    <div>
+      <div className="fixed top-0 w-full border-b-2 h-[10vh]">
+        <div className="h-[10vh] flex justify-center gap-5 items-center">
+          <div>
+            <button onClick={()=>setPage("login")} className={btnHeaderStyle}>
+              Login
+            </button>
+          </div>
+
+          <div>
+            <button onClick={()=>setPage("displayadd")} className={btnHeaderStyle}>
+              DisplayAdd
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="mt-[10vh]">
+        {renderPage()}
       </div>
     </div>
   )
