@@ -1,6 +1,7 @@
 from openpyxl import load_workbook, Workbook
-from os import mkdir, path, listdir
+from os import mkdir, path, listdir, remove
 import random, string
+import shutil
 
 
 
@@ -64,29 +65,6 @@ class db():
         except Exception as e:
             return (False, "Ошибка: " + str(e))
 
-
-    def editDisplay(self, brand, model, display, price, amount, hash):
-        try:
-            namePath = f"brands/{brand}/{model}.xlsx"
-            if not path.exists(namePath):
-                return (False, "Модели не существует.")
-            wb = load_workbook(namePath)
-            ws = wb.active
-            row = 2
-
-            while ws.cell(row=row, column=4).value != hash and ws.cell(row=row, column=4).value != None: row += 1
-            if ws.cell(row=row, column=4).value == None:
-                return (False, "Ошибка при поиске не найден нужный хеш: " + hash)
-            if ws.cell(row=row, column=4).value == hash:
-                print(display, price, amount, hash)
-                ws.cell(row=row, column=1).value = display
-                ws.cell(row=row, column=2).value = price
-                ws.cell(row=row, column=3).value = amount
-                wb.save(namePath)
-                return (True, "Успешно отредактирован хеш: " + hash)
-        except Exception as e:
-            return (False, "Ошибка: " + str(e))
-
     
     def getBrands(self):
         try:
@@ -136,5 +114,50 @@ class db():
                                  ws.cell(row=row, column=4).value])
                 row += 1
             return (True, displays)            
+        except Exception as e:
+            return (False, "Ошибка: " + str(e))
+        
+
+    def editDisplay(self, brand, model, display, price, amount, hash):
+        try:
+            namePath = f"brands/{brand}/{model}.xlsx"
+            if not path.exists(namePath):
+                return (False, "Модели не существует.")
+            wb = load_workbook(namePath)
+            ws = wb.active
+            row = 2
+
+            while ws.cell(row=row, column=4).value != hash and ws.cell(row=row, column=4).value != None: row += 1
+            if ws.cell(row=row, column=4).value == None:
+                return (False, "Ошибка при поиске не найден нужный хеш: " + hash)
+            if ws.cell(row=row, column=4).value == hash:
+                print(display, price, amount, hash)
+                ws.cell(row=row, column=1).value = display
+                ws.cell(row=row, column=2).value = price
+                ws.cell(row=row, column=3).value = amount
+                wb.save(namePath)
+                return (True, "Успешно отредактирован хеш: " + hash)
+        except Exception as e:
+            return (False, "Ошибка: " + str(e))
+    
+
+    def removeBrand(self, brand):
+        try:
+            namePath = f"brands/{brand}"
+            if not path.exists(namePath):
+                return (False, "Модели не существует.")
+            shutil.rmtree(namePath)
+            return (True, "Успешно удалён бренд: " + brand)
+        except Exception as e:
+            return (False, "Ошибка: " + str(e))
+    
+
+    def removeModel(self, brand, model):
+        try:
+            namePath = f"brands/{brand}/{model}.xlsx"
+            if not path.exists(namePath):
+                return (False, "Модели не существует.")
+            remove(namePath)
+            return (True, "Успешно удаленна модель: " + model)
         except Exception as e:
             return (False, "Ошибка: " + str(e))

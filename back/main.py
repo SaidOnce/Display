@@ -20,6 +20,18 @@ def add_brand():
         return jsonify({"error": "Error on back-end: " + str(e)})
 
 
+@app.route("/add_model", methods=["POST"])
+def add_model():
+    try:
+        brand = request.json["brand"]
+        model = request.json["model"]
+        result = db().addModel(brand=brand, model=model)
+        return jsonify(result)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
+
+
 @app.route("/get_brands", methods=["GET"])
 def get_brands():
     try:
@@ -28,7 +40,7 @@ def get_brands():
         return jsonify(result)
     except Exception as e:
         print("error coursed " + str(e))
-        return jsonify({"error": "Error on back-end: " + str(e)})
+        return jsonify({0: "Error on back-end: " + str(e)})
 
 
 @app.route("/get_models", methods=["POST"])
@@ -40,7 +52,7 @@ def get_models():
         return jsonify(result)
     except Exception as e:
         print("error coursed " + str(e))
-        return jsonify({"error": "Error on back-end: " + str(e)})
+        return jsonify({0: "Error on back-end: " + str(e)})
 
 
 
