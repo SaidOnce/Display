@@ -14,6 +14,10 @@ export default function Displaydd() {
 
     const [menuOpen, setMenuOpen] = useState(false);
 
+    const [submitMenu, setSubmitMenu] = useState(false);
+
+    const [submitContent, setSubmitContent] = useState("");
+
     const add_brand = (brand) => {
         fetch("http://localhost:5000/add_brand",{
           method:"POST",
@@ -128,7 +132,10 @@ export default function Displaydd() {
                                     <div className="w-full">
                                         {item}
                                     </div>
-                                    <div className="text-red-500 font-bold">
+                                    <div className="text-red-500 font-bold" onClick={()=>{
+                                        setSubmitContent(item);
+                                        setSubmitMenu(true);
+                                    }}>
                                          x
                                     </div>
                                 </div>
@@ -153,7 +160,10 @@ export default function Displaydd() {
                                     <div className="w-full">
                                         {item}
                                     </div>
-                                    <div className="text-red-500 font-bold">
+                                    <div className="text-red-500 font-bold" onClick={()=>{
+                                        setSubmitContent(item);
+                                        setSubmitMenu(true);
+                                    }}>
                                          x
                                     </div>
                                 </div>
@@ -163,6 +173,23 @@ export default function Displaydd() {
                 </div>
                 )}
             </div>
+
+            {submitMenu && (
+                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4">
+                  {/* Само меню */}
+                  <div className="w-full max-w-xl h-[20vh] bg-gray-200 rounded-3xl p-8 text-white relative flex flex-col">
+                    {/* Кнопка закрытия */}
+                    <button onClick={() => setSubmitMenu(false)} className="absolute top-4 right-4 text-2xl text-red-500 font-bold">✕</button>
+                    <div className="text-center text-black text-2xl">
+                        Вы действительно хотите удалить <span className="font-bold text-orange-400">{submitContent}</span> ? 
+                    </div>
+                    <div className="flex-1 flex items-center justify-center gap-4">
+                            <button className="text-black border-2 border-black w-full px-4 py-2 rounded-xl text-3xl transition-all duration-200 hover:opacity-50">Да</button>
+                            <button className="text-black border-2 border-black w-full px-4 py-2 rounded-xl text-3xl transition-all duration-200 hover:opacity-50">Нет</button>
+                    </div>
+                  </div>
+                </div>
+            )}
 
             {menuOpen && (
                 <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4">
