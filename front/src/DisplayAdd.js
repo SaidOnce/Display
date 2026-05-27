@@ -133,7 +133,7 @@ export default function Displaydd() {
                                         {item}
                                     </div>
                                     <div className="text-red-500 font-bold" onClick={()=>{
-                                        setSubmitContent(item);
+                                        setSubmitContent([0, item]);
                                         setSubmitMenu(true);
                                     }}>
                                          x
@@ -161,7 +161,7 @@ export default function Displaydd() {
                                         {item}
                                     </div>
                                     <div className="text-red-500 font-bold" onClick={()=>{
-                                        setSubmitContent(item);
+                                        setSubmitContent([1, item]);
                                         setSubmitMenu(true);
                                     }}>
                                          x
@@ -176,12 +176,13 @@ export default function Displaydd() {
 
             {submitMenu && (
                 <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4">
+                {console.log("isModel: " + Boolean(submitContent[0]))}
                   {/* Само меню */}
                   <div className="w-full max-w-xl h-[20vh] bg-gray-200 rounded-3xl p-8 text-white relative flex flex-col">
                     {/* Кнопка закрытия */}
                     <button onClick={() => setSubmitMenu(false)} className="absolute top-4 right-4 text-2xl text-red-500 font-bold">✕</button>
                     <div className="text-center text-black text-2xl">
-                        Вы действительно хотите удалить <span className="font-bold text-orange-400">{submitContent}</span> ? 
+                        Вы действительно хотите удалить <span className="font-bold text-orange-400">{submitContent[1]}</span> ? 
                     </div>
                     <div className="flex-1 flex items-center justify-center gap-4">
                             <button className="text-black border-2 border-black w-full px-4 py-2 rounded-xl text-3xl transition-all duration-200 hover:opacity-50">Да</button>
