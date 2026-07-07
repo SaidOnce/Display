@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 
-export default function Displaydd() {
+export default function DisplayAdd() {
     const [body, setBody] = useState(1);
 
     const [inputBrandAddValue, setInputBrandAddValue] = useState("");
@@ -18,49 +18,48 @@ export default function Displaydd() {
 
     const [submitContent, setSubmitContent] = useState("");
 
-    const add_brand = (brand) => {
-        fetch("http://localhost:5000/add_brand",{
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body: JSON.stringify({
-            brand
-          })
-        })
-        .then(res=>res.json())
-        .then(data=>{
-            if (data[0]!==true){
-                alert(data[1])
+    const add_brand = async (brand) => {
+        try {
+            const res = await fetch("http://localhost:5000/add_brand", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ brand })
+            });
+
+            const data = await res.json();
+
+            alert(data[1]);
+
+            if (data[0] === true) {
+            await get_brands(); // обновляем список брендов после успешного добавления
             }
-            else {
-                alert(data[1])
-            }
-        })
-      }
+        } catch (err) {
+            console.error(err);
+            alert("Ошибка при добавлении бренда");
+        }
+    };
     
 
-      const add_model = (brand, model) => {
+      const add_model = async (brand, model) => {
         console.log(brand, model)
-        fetch("http://localhost:5000/add_model",{
+        const res = await fetch("http://localhost:5000/add_model",{
           method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
+          headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
             brand,
             model
           })
         })
-        .then(res=>res.json())
-        .then(data=>{
-            if (data[0]!==true){
-                alert(data[1])
-            }
-            else {
-                alert(data[1])
-            }
-        })
+        const data = await res.json()
+        if (data[0]!==true){
+            alert(data[1])
+        }
+        else {
+            alert(data[1]);
+            get_models(selectedBrand);
+        }
       }
 
 
@@ -91,6 +90,44 @@ export default function Displaydd() {
     useEffect(()=>{
         get_brands()
     }, [])
+
+
+    const rem_brand = async () => {
+        const res = await fetch("http://localhost:5000/rem_brand",{
+          method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+            brand: submitContent[1]
+        })})
+        const data = await res.json()
+        if (data[0] !== true){
+            alert(data[1])
+        }
+        else{
+            await get_brands();
+            setSubmitMenu(false);
+            alert(data[1]);
+        }
+    }
+
+
+    const rem_model = async () => {
+        const res = await fetch("http://localhost:5000/rem_model",{
+          method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+            brand: selectedBrand,
+            model: submitContent[1]
+        })})
+        const data = await res.json();
+        if (data[0] === true){
+            get_models(selectedBrand);
+            alert(data[1]);
+            setSubmitMenu(false);
+        }
+        else {
+            alert(data[1]);
+        }
+    }
+
 
     return (
         <div className="relative">
@@ -156,8 +193,8 @@ export default function Displaydd() {
 
                         <div className="flex flex-col gap-2">
                             {models.map((item, index)=>(
-                                <div key={index} className="w-full border-2 flex cursor-pointer" onClick={()=>setMenuOpen(true)}>
-                                    <div className="w-full">
+                                <div key={index} className="w-full border-2 flex cursor-pointer">
+                                    <div className="w-full" onClick={()=>setMenuOpen(true)}>
                                         {item}
                                     </div>
                                     <div className="text-red-500 font-bold" onClick={()=>{
@@ -185,8 +222,19 @@ export default function Displaydd() {
                         Вы действительно хотите удалить <span className="font-bold text-orange-400">{submitContent[1]}</span> ? 
                     </div>
                     <div className="flex-1 flex items-center justify-center gap-4">
-                            <button className="text-black border-2 border-black w-full px-4 py-2 rounded-xl text-3xl transition-all duration-200 hover:opacity-50">Да</button>
-                            <button className="text-black border-2 border-black w-full px-4 py-2 rounded-xl text-3xl transition-all duration-200 hover:opacity-50">Нет</button>
+                            <button onClick={()=>{
+                                if (submitContent[0] === 0){
+                                    rem_brand();
+                                }
+                                else if (submitContent[0] === 1) {
+                                    rem_model();
+                                }
+                            }} className="text-black border-2 border-black w-full px-4 py-2 rounded-xl text-3xl transition-all duration-200 hover:opacity-50">
+                                Да
+                            </button>
+                            <button onClick={() => setSubmitMenu(false)} className="text-black border-2 border-black w-full px-4 py-2 rounded-xl text-3xl transition-all duration-200 hover:opacity-50">
+                                Нет
+                            </button>
                     </div>
                   </div>
                 </div>

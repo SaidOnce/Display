@@ -11,10 +11,8 @@ CORS(app)
 def add_brand():
     try:
         brand = request.json["brand"]
-        print(brand)
-        result = db().addBrand(brand=brand)
-        print(result)
-        return jsonify(result)
+        response = db().addBrand(brand=brand)
+        return jsonify(response)
     except Exception as e:
         print("error coursed " + str(e))
         return jsonify({"error": "Error on back-end: " + str(e)})
@@ -25,8 +23,8 @@ def add_model():
     try:
         brand = request.json["brand"]
         model = request.json["model"]
-        result = db().addModel(brand=brand, model=model)
-        return jsonify(result)
+        response = db().addModel(brand=brand, model=model)
+        return jsonify(response)
     except Exception as e:
         print("error coursed " + str(e))
         return jsonify({0: "Error on back-end: " + str(e)})
@@ -35,9 +33,8 @@ def add_model():
 @app.route("/get_brands", methods=["GET"])
 def get_brands():
     try:
-        result = db().getBrands()
-        print(result)
-        return jsonify(result)
+        response = db().getBrands()
+        return jsonify(response)
     except Exception as e:
         print("error coursed " + str(e))
         return jsonify({0: "Error on back-end: " + str(e)})
@@ -47,13 +44,36 @@ def get_brands():
 def get_models():
     try:
         brand = request.json["brand"]
-        result = db().getModels(brand)
-        print(result)
-        return jsonify(result)
+        response = db().getModels(brand)
+        return jsonify(response)
     except Exception as e:
         print("error coursed " + str(e))
         return jsonify({0: "Error on back-end: " + str(e)})
 
+
+@app.route("/rem_brand", methods=["POST"])
+def rem_brand():
+    try:
+        brand = request.json["brand"]
+        response = db().removeBrand(brand)
+        return jsonify(response)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
+
+
+@app.route("/rem_model", methods=["POST"])
+def rem_model():
+    try:
+        brand = request.json["brand"]
+        model = request.json["model"]
+
+        response = db().removeModel(brand=brand, model=model)
+        
+        return jsonify(response)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
 
 
 if __name__ == "__main__":
