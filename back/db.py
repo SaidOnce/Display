@@ -96,6 +96,11 @@ class db():
             if sparePart in wb.sheetnames:
                 return (False, "Данная запчасть уже существует")
             wb.create_sheet(sparePart)
+            ws = wb[sparePart]
+            ws.cell(row=1, column=1).value = "Название"
+            ws.cell(row=1, column=2).value = "Цена"
+            ws.cell(row=1, column=3).value = "Количество"
+            ws.cell(row=1, column=4).value = "ID"
             wb.save(f"brands/{brand}/{model}.xlsx")
             return (True, "Данная запчасть успешно созданна")
         except Exception as e:
