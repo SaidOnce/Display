@@ -105,6 +105,7 @@ export default function DisplayAdd() {
         else{
             await get_brands();
             setSubmitMenu(false);
+            setModels([]);
             alert(data[1]);
         }
     }

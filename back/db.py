@@ -2,7 +2,7 @@ from openpyxl import load_workbook, Workbook
 from os import mkdir, path, listdir, remove
 import random, string
 import shutil
-
+from pathlib import Path
 
 class db():
     def __init__(self):
@@ -18,8 +18,11 @@ class db():
 
     def addBrand(self, brand):
         try:
-            if path.exists(f"brands/{brand}"):
-                return (False, "Бренд уже существует")
+            tree = list(Path("brands").rglob("*"))
+            pathToCreate = f"brands\\{brand}"
+            for i in tree:
+                if str(i).lower() == str(pathToCreate).lower():
+                    return (False, "Бренд уже существует")
             mkdir("brands/" + brand)
             return (True, "Успешно создан")
         except Exception as e:
@@ -52,8 +55,11 @@ class db():
 
     def addModel(self, brand, model):
         try:
-            if path.exists(f"brands/{brand}/{model}"):
-                return (False, "Модель уже существует")
+            tree = list(Path("brands\\" + brand).rglob("*"))
+            pathToCreate = f"brands\\{brand}\\{model}.xlsx"
+            for i in tree:
+                if str(i).lower() == str(pathToCreate).lower():
+                    return (False, "Бренд уже существует")
             wb = Workbook()
             wb.save(f"brands/{brand}/{model}.xlsx")
             return (True, "Модель успешно созданна.")
@@ -88,7 +94,7 @@ class db():
             return (False, "Ошибка: " + str(e))
 
 
-    def addSparePart(self, brand, model, sparePart):
+    def addSparePartType(self, brand, model, sparePart):
         try:
             if not path.exists(f"brands/{brand}/{model}.xlsx"):
                 return (False, "Данной модели не существует")
@@ -107,18 +113,16 @@ class db():
             return (False, "Ошибка: " + str(e))
     
     
-    def addDisplay(self, brand, model, display, price, amount):
+    def addSparePart(self, brand, model, sparePart, name, price, amount):
         try:
             namePath = f"brands/{brand}/{model}.xlsx"
             if not path.exists(namePath):
                 return (False, "Модели не существует.")
             wb = load_workbook(namePath)
-            ws = wb.active
+            ws = wb[sparePart]
             row = 2
-            
             while not ws.cell(row=row, column=1).value == None: row += 1
-
-            ws.cell(row=row, column=1).value = display
+            ws.cell(row=row, column=1).value = name
             ws.cell(row=row, column=2).value = price
             ws.cell(row=row, column=3).value = amount
             ws.cell(row=row, column=4).value = self.generateHash(8)
@@ -129,46 +133,29 @@ class db():
             return (False, "Ошибка: " + str(e))
             
     
-    def getDisplays(self, brand, model):
+    def getSparePartTypes(self, brand, model):
         try:
             pathName = f"brands/{brand}/{model}.xlsx"
             if not path.exists(pathName):
                 return (False, "Бренд не найдены")
             
-            row = 2
-            displays = []
             wb = load_workbook(pathName)
-            ws = wb.active
-
-            while ws.cell(row=row, column=1).value != None:
-                displays.append([ws.cell(row=row, column=1).value,
-                                 ws.cell(row=row, column=2).value,
-                                 ws.cell(row=row, column=3).value,
-                                 ws.cell(row=row, column=4).value])
-                row += 1
-            return (True, displays)            
+            sparePartTypes = wb.sheetnames
+            
+            return (True, sparePartTypes)            
         except Exception as e:
             return (False, "Ошибка: " + str(e))
         
 
-    def editDisplay(self, brand, model, display, price, amount, hash):
+    def getSpareParts(self, brand, model, sparePart):
         try:
-            namePath = f"brands/{brand}/{model}.xlsx"
-            if not path.exists(namePath):
-                return (False, "Модели не существует.")
-            wb = load_workbook(namePath)
-            ws = wb.active
-            row = 2
-
-            while ws.cell(row=row, column=4).value != hash and ws.cell(row=row, column=4).value != None: row += 1
-            if ws.cell(row=row, column=4).value == None:
-                return (False, "Ошибка при поиске не найден нужный хеш: " + hash)
-            if ws.cell(row=row, column=4).value == hash:
-                print(display, price, amount, hash)
-                ws.cell(row=row, column=1).value = display
-                ws.cell(row=row, column=2).value = price
-                ws.cell(row=row, column=3).value = amount
-                wb.save(namePath)
-                return (True, "Успешно отредактирован хеш: " + hash)
+            pathName = f"brands/{brand}/{model}.xlsx"
+            if not path.exists(pathName):
+                return (False, "Бренд не найдены")
+            
+            wb = load_workbook(pathName)
+            sparePartTypes = wb.sheetnames
+            
+            return (True, sparePartTypes)            
         except Exception as e:
             return (False, "Ошибка: " + str(e))
