@@ -5,12 +5,14 @@ export default function DisplayAdd() {
 
     const [inputBrandAddValue, setInputBrandAddValue] = useState("");
     const [inputModelAddValue, setInputModelAddValue] = useState("");
+    const [inputSparePartAddValue, setInputSparePartAddValue] = useState("");
 
     const [brands, setBrands] = useState([]);
-
     const [models, setModels] = useState([]);
+    const [sparePartTypes, setSparePartTypes] = useState([]);
 
     const [selectedBrand, setSelectedBrand] = useState("");
+    const [selectedModel, setSelectedModel] = useState("");
 
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -33,7 +35,7 @@ export default function DisplayAdd() {
             alert(data[1]);
 
             if (data[0] === true) {
-            await get_brands(); // обновляем список брендов после успешного добавления
+            await get_brands();
             }
         } catch (err) {
             console.error(err);
@@ -69,7 +71,13 @@ export default function DisplayAdd() {
         const data = await res.json()
 
         setBrands(data[1]);
+        setModels([]);
+        setSparePartTypes([]);
       }
+
+    useEffect(()=>{
+        get_brands()
+    }, [])
 
     const get_models = async (brand) => {
         const res = await fetch("http://localhost:5000/get_models",{
@@ -84,12 +92,9 @@ export default function DisplayAdd() {
         }
         else{
             setModels(data[1])
+            setSparePartTypes([]);
         }
       }
-
-    useEffect(()=>{
-        get_brands()
-    }, [])
 
 
     const rem_brand = async () => {
@@ -106,6 +111,7 @@ export default function DisplayAdd() {
             await get_brands();
             setSubmitMenu(false);
             setModels([]);
+            setSparePartTypes([]);
             alert(data[1]);
         }
     }
@@ -121,6 +127,64 @@ export default function DisplayAdd() {
         const data = await res.json();
         if (data[0] === true){
             get_models(selectedBrand);
+            setSparePartTypes([]);
+            alert(data[1]);
+            setSubmitMenu(false);
+        }
+        else {
+            alert(data[1]);
+        }
+    }
+
+    const get_spare_part_types = async (model) => {
+        const res = await fetch("http://localhost:5000/get_spare_part_types",{
+          method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+            brand: selectedBrand,
+            model
+            
+        })})
+        const data = await res.json()
+
+        if (data[0] === true){
+            setSparePartTypes(data[1]);
+        }
+        else {
+            alert(data[1]);
+        }
+
+      }
+
+      
+      const add_spare_part_type = async (brand, model, sparePartType) => {
+        const res = await fetch("http://localhost:5000/add_spare_part_type",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            brand,
+            model,
+            sparePartType
+          })
+        })
+        const data = await res.json()
+        if (data[0]!==true){
+            alert(data[1]);
+        }
+        get_spare_part_types(model);
+          }
+
+
+      const rem_spare_part_type = async () => {
+        const res = await fetch("http://localhost:5000/rem_spare_part_type",{
+          method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+            brand: selectedBrand,
+            model: selectedModel,
+            sparePartType: submitContent[1]
+        })})
+        const data = await res.json();
+        if (data[0] === true){
+            get_spare_part_types(selectedModel);
             alert(data[1]);
             setSubmitMenu(false);
         }
@@ -130,6 +194,7 @@ export default function DisplayAdd() {
     }
 
 
+    const threeRoot = "w-[33vw] text-center text-2xl flex flex-col"
     return (
         <div className="relative">
             <div className="flex justify-center pt-3 gap-5">
@@ -148,9 +213,10 @@ export default function DisplayAdd() {
                         
                     </div>
                 ) : (
-                <div className="flex gap-[6vw]">
-                    <div className="w-[47vw] text-center text-2xl flex flex-col gap-1">
-                        <div className="flex gap-1">
+                <div className="flex gap-[.5vw]" data-comment="РОДИТЕЛЬ убрал gap-6vw">
+
+                    <div className={`${threeRoot}`} data-comment="бренды">
+                        <div className="flex gap-1 mb-2">
                             <input 
                             className="w-full border-2 text-center" 
                             value={inputBrandAddValue} 
@@ -164,8 +230,8 @@ export default function DisplayAdd() {
                         <div className="flex flex-col gap-2">
                             {brands.map((item, index)=>(
                                 <div key={index} className="border-2 flex cursor-pointer" onClick={()=>{
-                                    get_models(item);
                                     setSelectedBrand(item);
+                                    get_models(item);
                                 }}>
                                     <div className="w-full">
                                         {item}
@@ -181,8 +247,8 @@ export default function DisplayAdd() {
                         </div>
                     </div>
 
-                    <div className="w-[47vw] text-center text-2xl flex flex-col gap-1">
-                        <div className="flex gap-1">
+                    <div className={`${threeRoot}`} data-comment="модели">
+                        <div className="flex gap-1 mb-2">
                             <input 
                             className="w-full border-2 text-center" 
                             value={inputModelAddValue} 
@@ -195,11 +261,42 @@ export default function DisplayAdd() {
                         <div className="flex flex-col gap-2">
                             {models.map((item, index)=>(
                                 <div key={index} className="w-full border-2 flex cursor-pointer">
-                                    <div className="w-full" onClick={()=>setMenuOpen(true)}>
+                                    <div className="w-full" onClick={()=>{
+                                        setSelectedModel(item);
+                                        get_spare_part_types(item);
+                                    }}>
                                         {item}
                                     </div>
                                     <div className="text-red-500 font-bold" onClick={()=>{
                                         setSubmitContent([1, item]);
+                                        setSubmitMenu(true);
+                                    }}>
+                                         x
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className={`${threeRoot}`} data-comment="запчасти">
+                        <div className="flex gap-1 mb-2">
+                            <input 
+                            className="w-full border-2 text-center" 
+                            value={inputSparePartAddValue} 
+                            onChange={(e) => setInputSparePartAddValue(e.target.value)}/>
+                            <button 
+                            className="border-2 px-2 hover:bg-gray-400"
+                            onClick={()=>{add_spare_part_type(selectedBrand, selectedModel, inputSparePartAddValue)}}>Добавить</button>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            {sparePartTypes.map((item, index)=>(
+                                <div key={index} className="w-full border-2 flex cursor-pointer">
+                                    <div className="w-full" onClick={()=>setMenuOpen(true)}>
+                                        {item}
+                                    </div>
+                                    <div className="text-red-500 font-bold" onClick={()=>{
+                                        setSubmitContent([2, item]);
                                         setSubmitMenu(true);
                                     }}>
                                          x
@@ -229,6 +326,9 @@ export default function DisplayAdd() {
                                 }
                                 else if (submitContent[0] === 1) {
                                     rem_model();
+                                }
+                                else if (submitContent[0] === 2) {
+                                    rem_spare_part_type();
                                 }
                             }} className="text-black border-2 border-black w-full px-4 py-2 rounded-xl text-3xl transition-all duration-200 hover:opacity-50">
                                 Да

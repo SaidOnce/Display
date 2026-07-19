@@ -94,15 +94,15 @@ class db():
             return (False, "Ошибка: " + str(e))
 
 
-    def addSparePartType(self, brand, model, sparePart):
+    def addSparePartType(self, brand, model, sparePartType):
         try:
             if not path.exists(f"brands/{brand}/{model}.xlsx"):
                 return (False, "Данной модели не существует")
             wb = load_workbook(f"brands/{brand}/{model}.xlsx")
-            if sparePart in wb.sheetnames:
+            if sparePartType in wb.sheetnames:
                 return (False, "Данная запчасть уже существует")
-            wb.create_sheet(sparePart)
-            ws = wb[sparePart]
+            wb.create_sheet(sparePartType)
+            ws = wb[sparePartType]
             ws.cell(row=1, column=1).value = "Название"
             ws.cell(row=1, column=2).value = "Цена"
             ws.cell(row=1, column=3).value = "Количество"
@@ -141,7 +141,8 @@ class db():
             
             wb = load_workbook(pathName)
             sparePartTypes = wb.sheetnames
-            
+            if "Sheet" in sparePartTypes:sparePartTypes.remove("Sheet")
+
             return (True, sparePartTypes)            
         except Exception as e:
             return (False, "Ошибка: " + str(e))
@@ -154,8 +155,30 @@ class db():
                 return (False, "Бренд не найдены")
             
             wb = load_workbook(pathName)
-            sparePartTypes = wb.sheetnames
+            ws = wb[sparePart]
+            row = 2
+            spareParts = []
+            while not ws.cell(row=row, column=1).value == None: 
+                sparePart = []
+                for i in range(1,5):
+                    sparePart.append(ws.cell(row=row, column=i).value)
+                row += 1
+                spareParts.append(sparePart)
+            return (True, spareParts)
+        except Exception as e:
+            return (False, "Ошибка: " + str(e))
+        
+    
+    def removeSparePartType(self, brand, model, sparePartType):
+        try:
+            if not path.exists(f"brands/{brand}/{model}.xlsx"):
+                return (False, "Данной модели не существует")
+            wb = load_workbook(f"brands/{brand}/{model}.xlsx")
+
+            if sparePartType in wb.sheetnames:
+                del wb[sparePartType]
             
-            return (True, sparePartTypes)            
+            wb.save(f"brands/{brand}/{model}.xlsx")
+            return (True, "Данная запчасть успешно созданна")
         except Exception as e:
             return (False, "Ошибка: " + str(e))

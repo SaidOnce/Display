@@ -43,6 +43,7 @@ def get_brands():
 @app.route("/get_models", methods=["POST"])
 def get_models():
     try:
+        print(request.json)
         brand = request.json["brand"]
         response = db().getModels(brand)
         return jsonify(response)
@@ -69,6 +70,48 @@ def rem_model():
         model = request.json["model"]
 
         response = db().removeModel(brand=brand, model=model)
+        
+        return jsonify(response)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
+    
+
+@app.route("/get_spare_part_types", methods=["POST"])
+def get_spare_part_types():
+    try:
+        brand = request.json["brand"]
+        model = request.json["model"]
+        print(brand, model)
+        response = db().getSparePartTypes(brand, model)
+        print(response)
+        return jsonify(response)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
+    
+
+@app.route("/add_spare_part_type", methods=["POST"])
+def add_spare_part_type():
+    try:
+        brand = request.json["brand"]
+        model = request.json["model"]
+        sparePartType = request.json["sparePartType"]
+        response = db().addSparePartType(brand, model, sparePartType)
+        return jsonify(response)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
+    
+
+@app.route("/rem_spare_part_type", methods=["POST"])
+def rem_spare_part_type():
+    try:
+        brand = request.json["brand"]
+        model = request.json["model"]
+        sparePartType = request.json["sparePartType"]
+        print(brand, model, sparePartType)
+        response = db().removeSparePartType(brand=brand, model=model, sparePartType=sparePartType)
         
         return jsonify(response)
     except Exception as e:
