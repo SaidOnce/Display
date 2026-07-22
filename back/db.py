@@ -59,7 +59,7 @@ class db():
             pathToCreate = f"brands\\{brand}\\{model}.xlsx"
             for i in tree:
                 if str(i).lower() == str(pathToCreate).lower():
-                    return (False, "Бренд уже существует")
+                    return (False, "Данная модель уже существует")
             wb = Workbook()
             wb.save(f"brands/{brand}/{model}.xlsx")
             return (True, "Модель успешно созданна.")
@@ -71,7 +71,7 @@ class db():
         try:
             pathName = f"brands/{brand}"
             if not path.exists(pathName):
-                return (False, "Бренд не найдены")
+                return (False, "Модель не найдены")
             
             models = []
             for item in listdir(pathName):
@@ -148,20 +148,29 @@ class db():
             return (False, "Ошибка: " + str(e))
         
 
-    def getSpareParts(self, brand, model, sparePart):
+    def getSpareParts(self, brand, model, sparePartType):
         try:
             pathName = f"brands/{brand}/{model}.xlsx"
             if not path.exists(pathName):
                 return (False, "Бренд не найдены")
             
             wb = load_workbook(pathName)
-            ws = wb[sparePart]
+            ws = wb[sparePartType]
             row = 2
             spareParts = []
             while not ws.cell(row=row, column=1).value == None: 
-                sparePart = []
-                for i in range(1,5):
-                    sparePart.append(ws.cell(row=row, column=i).value)
+                if ws.cell(row=row, column=1).value == "###":
+                    row += 1
+                    continue
+                sparePart = {}
+                                
+                sparePart.update({
+                    "name": ws.cell(row=row, column=1).value,
+                    "price": ws.cell(row=row, column=2).value,
+                    "amount": ws.cell(row=row, column=3).value,
+                    "id": ws.cell(row=row, column=4).value,
+                })
+
                 row += 1
                 spareParts.append(sparePart)
             return (True, spareParts)
@@ -179,6 +188,26 @@ class db():
                 del wb[sparePartType]
             
             wb.save(f"brands/{brand}/{model}.xlsx")
-            return (True, "Данная запчасть успешно созданна")
+            return (True, "Данная запчасть успешно удаленна")
+        except Exception as e:
+            return (False, "Ошибка: " + str(e))
+        
+    
+
+    def removeSparePart(self, brand, model, sparePartType, id):
+        try:
+            if not path.exists(f"brands/{brand}/{model}.xlsx"):
+                return (False, "Данной модели не существует")
+            wb = load_workbook(f"brands/{brand}/{model}.xlsx")
+            ws = wb[sparePartType]
+            row = 2
+            while ws.cell(row=row, column=4).value != id:
+                if ws.cell(row=row, column=4).value == None:
+                    return (False, "Данный ID не найден")
+                row += 1
+            for i in range(1,5):
+                ws.cell(row=row, column=i).value = "###"
+            wb.save(f"brands/{brand}/{model}.xlsx")
+            return (True, "Данная запчасть успешно удаленна")
         except Exception as e:
             return (False, "Ошибка: " + str(e))

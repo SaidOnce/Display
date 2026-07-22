@@ -91,6 +91,21 @@ def get_spare_part_types():
         return jsonify({0: "Error on back-end: " + str(e)})
     
 
+@app.route("/get_spare_parts", methods=["POST"])
+def get_spare_parts():
+    try:
+        brand = request.json["brand"]
+        model = request.json["model"]
+        sparePartType = request.json["sparePartType"]
+        print(brand, model, sparePartType)
+        response = db().getSpareParts(brand, model, sparePartType)
+        print(response)
+        return jsonify(response)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
+
+
 @app.route("/add_spare_part_type", methods=["POST"])
 def add_spare_part_type():
     try:
@@ -113,6 +128,37 @@ def rem_spare_part_type():
         print(brand, model, sparePartType)
         response = db().removeSparePartType(brand=brand, model=model, sparePartType=sparePartType)
         
+        return jsonify(response)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
+    
+
+
+@app.route("/add_spare_part", methods=["POST"])
+def add_spare_part():
+    try:
+        brand = request.json["brand"]
+        model = request.json["model"]
+        sparePartType = request.json["sparePart"]
+        name = request.json["name"]
+        price = request.json["price"]
+        amount = request.json["amount"]
+        response = db().addSparePart(brand=brand, model=model, sparePart=sparePartType, name=name, price=price, amount=amount)
+        return jsonify(response)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
+
+
+@app.route("/rem_spare_part", methods=["POST"])
+def rem_spare_part():
+    try:
+        brand = request.json["brand"]
+        model = request.json["model"]
+        sparePartType = request.json["sparePart"]
+        id = request.json["id"]
+        response = db().removeSparePart(brand=brand, model=model, sparePartType=sparePartType,id=id)
         return jsonify(response)
     except Exception as e:
         print("error coursed " + str(e))
