@@ -10,13 +10,18 @@ export default function DisplayAdd() {
     const [brands, setBrands] = useState([]);
     const [models, setModels] = useState([]);
     const [sparePartTypes, setSparePartTypes] = useState([]);
+    const [spareParts, setSpareParts] = useState([]);
 
     const [selectedBrand, setSelectedBrand] = useState("");
     const [selectedModel, setSelectedModel] = useState("");
+    const [selectedSparePart, setSelectedSparePart] = useState("");
 
     const [menuOpen, setMenuOpen] = useState(false);
 
     const [submitMenu, setSubmitMenu] = useState(false);
+    const [menuNameInput, setMenuNameInput] = useState();
+    const [menuPriceInput, setMenuPriceInput] = useState();
+    const [menuAmountInput, setMenuAmountInput] = useState();
 
     const [submitContent, setSubmitContent] = useState("");
 
@@ -141,18 +146,15 @@ export default function DisplayAdd() {
           method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
             brand: selectedBrand,
-            model
-            
+            model        
         })})
         const data = await res.json()
-
         if (data[0] === true){
             setSparePartTypes(data[1]);
         }
         else {
             alert(data[1]);
         }
-
       }
 
       
@@ -192,6 +194,69 @@ export default function DisplayAdd() {
             alert(data[1]);
         }
     }
+
+    const get_spare_parts = async (sparePartType) => {
+        const res = await fetch("http://localhost:5000/get_spare_parts",{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+            brand: selectedBrand,
+            model: selectedModel,
+            sparePartType: sparePartType
+        })})
+        const data = await res.json()
+        if (data[0] === true){
+            setSpareParts(data[1]);
+        }
+        else {
+            alert(data[1]);
+        }
+      }
+
+
+      const add_spare_part = async () => {
+        const res = await fetch("http://localhost:5000/add_spare_part",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            brand: selectedBrand,
+            model: selectedModel,
+            sparePart: selectedSparePart,
+            name: menuNameInput,
+            price: menuPriceInput,
+            amount: menuAmountInput
+          })
+        })
+        const data = await res.json()
+        if (data[0]!==true){
+            alert(data[1])
+        }
+        else {
+            alert(data[1]);
+            get_spare_parts(selectedSparePart);
+        }
+      }
+
+
+      const rem_spare_part = async (id) => {
+        const res = await fetch("http://localhost:5000/rem_spare_part",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            brand: selectedBrand,
+            model: selectedModel,
+            sparePart: selectedSparePart,
+            id: id
+          })
+        })
+        const data = await res.json()
+        if (data[0]!==true){
+            alert(data[1])
+        }
+        else {
+            get_spare_parts(selectedSparePart);
+            alert(data[1]);
+        }
+      }
 
 
     const threeRoot = "w-[33vw] text-center text-2xl flex flex-col"
@@ -292,7 +357,11 @@ export default function DisplayAdd() {
                         <div className="flex flex-col gap-2">
                             {sparePartTypes.map((item, index)=>(
                                 <div key={index} className="w-full border-2 flex cursor-pointer">
-                                    <div className="w-full" onClick={()=>setMenuOpen(true)}>
+                                    <div className="w-full" onClick={()=>{
+                                        setSelectedSparePart(item);
+                                        get_spare_parts(item);
+                                        setMenuOpen(true);
+                                    }}>
                                         {item}
                                     </div>
                                     <div className="text-red-500 font-bold" onClick={()=>{
@@ -342,15 +411,141 @@ export default function DisplayAdd() {
             )}
 
             {menuOpen && (
-                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4">
-                  {/* Само меню */}
-                  <div className="w-full max-w-7xl h-[90vh] bg-[#1f1f1f] rounded-3xl p-8 text-white relative overflow-auto">
-                    {/* Кнопка закрытия */}
-                    <button onClick={() => setMenuOpen(false)} className="absolute top-4 right-4 text-2xl">✕</button>
-                    
-                  </div>
-                </div>
-            )}
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="w-full max-w-7xl h-[90vh] bg-gray-200 rounded-3xl p-8 relative overflow-auto">
+                <button onClick={() => setMenuOpen(false)} className="z-10 absolute top-4 right-4 w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 text-white text-xl flex items-center justify-center">✕</button>
+<div className="flex gap-6 h-full">
+
+    {/* Левая панель */}
+    <div className="w-80 bg-white rounded-2xl shadow-lg p-6 flex flex-col">
+
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            ➕ Добавить запчасть
+        </h2>
+
+        <label className="text-gray-600 mb-2">
+            Название
+        </label>
+
+        <input
+            type="text"
+            placeholder="Например OLED"
+            value={menuNameInput} 
+            onChange={(e) => setMenuNameInput(e.target.value)}
+            
+            className="border border-gray-300 rounded-xl p-3 mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <label className="text-gray-600 mb-2">
+            Цена
+        </label>
+
+        <input
+            type="number"
+            value={menuPriceInput} 
+            onChange={(e) => setMenuPriceInput(e.target.value)}
+            placeholder="10000"
+            className="border border-gray-300 rounded-xl p-3 mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <label className="text-gray-600 mb-2">
+            Количество
+        </label>
+
+        <input
+            type="number"
+            placeholder="5"
+            value={menuAmountInput} 
+            onChange={(e) => setMenuAmountInput(e.target.value)}
+            className="border border-gray-300 rounded-xl p-3 mb-8 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <button onClick={()=>add_spare_part()} className="mt-auto bg-blue-600 hover:bg-blue-700 transition rounded-xl p-3 text-white font-semibold">
+            Добавить
+        </button>
+
+    </div>
+
+    {/* Правая часть */}
+    <div className="flex-1 bg-white rounded-2xl shadow-lg overflow-auto">
+
+        <table className="w-full border-collapse">
+
+            <thead className="bg-gray-800 text-white sticky top-0">
+
+                <tr>
+                    <th className="p-4 border">Название</th>
+                    <th className="p-4 border">Цена</th>
+                    <th className="p-4 border">Количество</th>
+                    <th className="p-4 border">ID</th>
+                    <th className="p-4 border w-28">Действия</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {spareParts.map((sparePart, index) => (
+
+                    <tr
+                        key={sparePart.id}
+                        className={`
+                            ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                            hover:bg-blue-50 transition
+                        `}
+                    >
+
+                        <td className="border p-3">
+                            {sparePart.name}
+                        </td>
+
+                        <td className="border p-3 text-center">
+                            {sparePart.price}
+                        </td>
+
+                        <td className="border p-3 text-center">
+                            {sparePart.amount}
+                        </td>
+
+                        <td className="border p-3 text-center">
+                            {sparePart.id}
+                        </td>
+
+                        <td className="border p-3">
+
+                            <div className="flex justify-center gap-3">
+
+                                <button
+                                    className="w-9 h-9 rounded-lg bg-yellow-400 hover:bg-yellow-500 transition"
+                                >
+                                    ✏️
+                                </button>
+
+                                <button
+                                    className="w-9 h-9 rounded-lg bg-red-500 hover:bg-red-600 text-white transition"
+                                    onClick={()=>rem_spare_part(sparePart.id)}
+                                >
+                                    🗑
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                ))}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+        </div>
+    </div>
+)}
         </div>
     )
 }
