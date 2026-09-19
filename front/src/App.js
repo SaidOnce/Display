@@ -2,11 +2,13 @@ import "tailwindcss/tailwind.css"
 import Login from "./Login"
 import { useState } from "react"
 import Displaydd from "./DisplayAdd"
+import Cookie from "js-cookie";
 
 const btnHeaderStyle = "px-6 text-4xl border-x-2 border-black py-3" 
 
 export default function App() {
   const [page, setPage] = useState("login")
+  
   
 
   const renderPage = () => {

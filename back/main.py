@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import csv
 from db import db
 
 app = Flask(__name__)
@@ -165,5 +164,21 @@ def rem_spare_part():
         return jsonify({0: "Error on back-end: " + str(e)})
 
 
+@app.route("/edit_spare_part", methods=["POST"])
+def edit_spare_part():
+    try:
+        brand = request.json["brand"]
+        model = request.json["model"]
+        sparePartType = request.json["sparePartType"]
+        name = request.json["name"]
+        price = request.json["price"]
+        amount = request.json["amount"]
+        id = request.json["id"]
+        response = db().editSparePart(brand=brand, model=model, sparePartType=sparePartType,amount=amount,name=name,price=price,id=id)
+        return jsonify(response)
+    except Exception as e:
+        print("error coursed " + str(e))
+        return jsonify({0: "Error on back-end: " + str(e)})
+
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

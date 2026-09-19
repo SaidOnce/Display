@@ -14,7 +14,7 @@ export default function DisplayAdd() {
 
     const [selectedBrand, setSelectedBrand] = useState("");
     const [selectedModel, setSelectedModel] = useState("");
-    const [selectedSparePart, setSelectedSparePart] = useState("");
+    const [selectedSparePartType, setSelectedSparePartType] = useState("");
 
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -25,9 +25,70 @@ export default function DisplayAdd() {
 
     const [submitContent, setSubmitContent] = useState("");
 
+    const [editingId, setEditingId] = useState(null);
+    const [editFormData, setEditFormData] = useState({ name: "", price: "", amount: "" });
+
+    const backendAdress = "http://10.165.124.46:5000"
+
+    const handleEditClick = (sparePart) => {
+        setEditingId(sparePart.id);
+        setEditFormData({
+            name: sparePart.name,
+            price: sparePart.price,
+            amount: sparePart.amount
+        });
+    };
+
+    // Отмена редактирования
+    const handleCancel = () => {
+        setEditingId(null);
+    };
+
+    // Изменение полей ввода
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    // Сохранение (отправка на бэкенд Python)
+    const handleSave = async (id) => {
+        try {
+            const res = await fetch(backendAdress + "/edit_spare_part", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ 
+                brand: selectedBrand,
+                model: selectedModel,
+                sparePartType: selectedSparePartType,
+                name: editFormData["name"],
+                amount: editFormData["amount"],
+                price: editFormData["price"],
+                id: id
+            })
+            });
+
+            const data = await res.json();
+
+            if (data[0] === true){
+                handleCancel();
+                get_spare_parts(selectedSparePartType);
+            };
+            alert(data[1]);
+
+            if (data[0] === true) {
+            await get_brands();
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Ошибка при добавлении бренда");
+        }
+    };
+
     const add_brand = async (brand) => {
         try {
-            const res = await fetch("http://localhost:5000/add_brand", {
+            const res = await fetch(backendAdress + "/add_brand", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -51,7 +112,7 @@ export default function DisplayAdd() {
 
       const add_model = async (brand, model) => {
         console.log(brand, model)
-        const res = await fetch("http://localhost:5000/add_model",{
+        const res = await fetch(backendAdress + "/add_model",{
           method:"POST",
           headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
@@ -71,7 +132,7 @@ export default function DisplayAdd() {
 
 
     const get_brands = async () => {
-        const res = await fetch("http://localhost:5000/get_brands",{
+        const res = await fetch(backendAdress + "/get_brands",{
           method:"GET", headers:{"Content-Type":"application/json"}})
         const data = await res.json()
 
@@ -85,7 +146,7 @@ export default function DisplayAdd() {
     }, [])
 
     const get_models = async (brand) => {
-        const res = await fetch("http://localhost:5000/get_models",{
+        const res = await fetch(backendAdress + "/get_models",{
           method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
             brand
@@ -103,7 +164,7 @@ export default function DisplayAdd() {
 
 
     const rem_brand = async () => {
-        const res = await fetch("http://localhost:5000/rem_brand",{
+        const res = await fetch(backendAdress + "/rem_brand",{
           method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
             brand: submitContent[1]
@@ -123,7 +184,7 @@ export default function DisplayAdd() {
 
 
     const rem_model = async () => {
-        const res = await fetch("http://localhost:5000/rem_model",{
+        const res = await fetch(backendAdress + "/rem_model",{
           method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
             brand: selectedBrand,
@@ -142,7 +203,7 @@ export default function DisplayAdd() {
     }
 
     const get_spare_part_types = async (model) => {
-        const res = await fetch("http://localhost:5000/get_spare_part_types",{
+        const res = await fetch(backendAdress + "/get_spare_part_types",{
           method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
             brand: selectedBrand,
@@ -159,7 +220,7 @@ export default function DisplayAdd() {
 
       
       const add_spare_part_type = async (brand, model, sparePartType) => {
-        const res = await fetch("http://localhost:5000/add_spare_part_type",{
+        const res = await fetch(backendAdress + "/add_spare_part_type",{
           method:"POST",
           headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
@@ -177,7 +238,7 @@ export default function DisplayAdd() {
 
 
       const rem_spare_part_type = async () => {
-        const res = await fetch("http://localhost:5000/rem_spare_part_type",{
+        const res = await fetch(backendAdress + "/rem_spare_part_type",{
           method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
             brand: selectedBrand,
@@ -196,7 +257,7 @@ export default function DisplayAdd() {
     }
 
     const get_spare_parts = async (sparePartType) => {
-        const res = await fetch("http://localhost:5000/get_spare_parts",{
+        const res = await fetch(backendAdress + "/get_spare_parts",{
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
             brand: selectedBrand,
@@ -214,13 +275,13 @@ export default function DisplayAdd() {
 
 
       const add_spare_part = async () => {
-        const res = await fetch("http://localhost:5000/add_spare_part",{
+        const res = await fetch(backendAdress + "/add_spare_part",{
           method:"POST",
           headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
             brand: selectedBrand,
             model: selectedModel,
-            sparePart: selectedSparePart,
+            sparePart: selectedSparePartType,
             name: menuNameInput,
             price: menuPriceInput,
             amount: menuAmountInput
@@ -232,19 +293,19 @@ export default function DisplayAdd() {
         }
         else {
             alert(data[1]);
-            get_spare_parts(selectedSparePart);
+            get_spare_parts(selectedSparePartType);
         }
       }
 
 
       const rem_spare_part = async (id) => {
-        const res = await fetch("http://localhost:5000/rem_spare_part",{
+        const res = await fetch(backendAdress + "/rem_spare_part",{
           method:"POST",
           headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
             brand: selectedBrand,
             model: selectedModel,
-            sparePart: selectedSparePart,
+            sparePart: selectedSparePartType,
             id: id
           })
         })
@@ -253,7 +314,7 @@ export default function DisplayAdd() {
             alert(data[1])
         }
         else {
-            get_spare_parts(selectedSparePart);
+            get_spare_parts(selectedSparePartType);
             alert(data[1]);
         }
       }
@@ -358,7 +419,7 @@ export default function DisplayAdd() {
                             {sparePartTypes.map((item, index)=>(
                                 <div key={index} className="w-full border-2 flex cursor-pointer">
                                     <div className="w-full" onClick={()=>{
-                                        setSelectedSparePart(item);
+                                        setSelectedSparePartType(item);
                                         get_spare_parts(item);
                                         setMenuOpen(true);
                                     }}>
@@ -485,55 +546,116 @@ export default function DisplayAdd() {
 
             <tbody>
 
-                {spareParts.map((sparePart, index) => (
+                {spareParts.map((sparePart, index) => {
+    const isEditing = editingId === sparePart.id;
 
-                    <tr
-                        key={sparePart.id}
-                        className={`
-                            ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                            hover:bg-blue-50 transition
-                        `}
-                    >
+    return (
+        <tr
+            key={sparePart.id}
+            className={`
+                ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                hover:bg-blue-50 transition
+            `}
+        >
+            {/* Название */}
+            <td className="border p-3">
+                {isEditing ? (
+                    <input
+                        type="text"
+                        name="name"
+                        value={editFormData.name}
+                        onChange={handleInputChange}
+                        className="w-full p-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                ) : (
+                    sparePart.name
+                )}
+            </td>
 
-                        <td className="border p-3">
-                            {sparePart.name}
-                        </td>
+            {/* Цена */}
+            <td className="border p-3 text-center">
+                {isEditing ? (
+                    <input
+                        type="number"
+                        name="price"
+                        value={editFormData.price}
+                        onChange={handleInputChange}
+                        className="w-full p-1 border rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                ) : (
+                    sparePart.price
+                )}
+            </td>
 
-                        <td className="border p-3 text-center">
-                            {sparePart.price}
-                        </td>
+            {/* Количество */}
+            <td className="border p-3 text-center">
+                {isEditing ? (
+                    <input
+                        type="number"
+                        name="amount"
+                        value={editFormData.amount}
+                        onChange={handleInputChange}
+                        className="w-full p-1 border rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                ) : (
+                    sparePart.amount
+                )}
+            </td>
 
-                        <td className="border p-3 text-center">
-                            {sparePart.amount}
-                        </td>
+            {/* ID (нередактируемое поле) */}
+            <td className="border p-3 text-center">
+                {sparePart.id}
+            </td>
 
-                        <td className="border p-3 text-center">
-                            {sparePart.id}
-                        </td>
+            {/* Действия */}
+            <td className="border p-3">
+                <div className="flex justify-center gap-3">
+                    {isEditing ? (
+                        <>
+                            {/* Кнопка "Сохранить" (Галочка) */}
+                            <button
+                                className="w-9 h-9 rounded-lg bg-green-500 hover:bg-green-600 text-white transition flex items-center justify-center"
+                                onClick={() => handleSave(sparePart.id)}
+                                title="Сохранить"
+                            >
+                                ✅
+                            </button>
 
-                        <td className="border p-3">
+                            {/* Кнопка "Отмена" (Крестик) */}
+                            <button
+                                className="w-9 h-9 rounded-lg bg-gray-400 hover:bg-gray-500 text-white transition flex items-center justify-center"
+                                onClick={handleCancel}
+                                title="Отмена"
+                            >
+                                ❌
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            {/* Кнопка "Редактировать" */}
+                            <button
+                                className="w-9 h-9 rounded-lg bg-yellow-400 hover:bg-yellow-500 transition flex items-center justify-center"
+                                onClick={() => handleEditClick(sparePart)}
+                                title="Редактировать"
+                            >
+                                ✏️
+                            </button>
 
-                            <div className="flex justify-center gap-3">
-
-                                <button
-                                    className="w-9 h-9 rounded-lg bg-yellow-400 hover:bg-yellow-500 transition"
-                                >
-                                    ✏️
-                                </button>
-
-                                <button
-                                    className="w-9 h-9 rounded-lg bg-red-500 hover:bg-red-600 text-white transition"
-                                    onClick={()=>rem_spare_part(sparePart.id)}
-                                >
-                                    🗑
-                                </button>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-                ))}
+                            {/* Кнопка "Удалить" */}
+                            <button
+                                className="w-9 h-9 rounded-lg bg-red-500 hover:bg-red-600 text-white transition flex items-center justify-center"
+                                onClick={() => rem_spare_part(sparePart.id)}
+                                title="Удалить"
+                            >
+                                🗑
+                            </button>
+                        </>
+                    )}
+                </div>
+            </td>
+        </tr>
+    );
+})}
 
             </tbody>
 

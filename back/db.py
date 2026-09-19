@@ -4,6 +4,7 @@ import random, string
 import shutil
 from pathlib import Path
 
+
 class db():
     def __init__(self):
         if not path.exists("brands"):
@@ -121,7 +122,7 @@ class db():
             wb = load_workbook(namePath)
             ws = wb[sparePart]
             row = 2
-            while not ws.cell(row=row, column=1).value == None: row += 1
+            while not ws.cell(row=row, column=1).value == None and not ws.cell(row=row, column=1).value == "###": row += 1
             ws.cell(row=row, column=1).value = name
             ws.cell(row=row, column=2).value = price
             ws.cell(row=row, column=3).value = amount
@@ -131,18 +132,35 @@ class db():
             return (True, "Дисплей успешно добавлен.")
         except Exception as e:
             return (False, "Ошибка: " + str(e))
-            
-    
+
+
+    def editSparePart(self, brand, model, sparePartType, name, price, amount, id):
+            try:
+                namePath = f"brands/{brand}/{model}.xlsx"
+                if not path.exists(namePath):
+                    return (False, "Модели не существует.")
+                wb = load_workbook(namePath)
+                ws = wb[sparePartType]
+                row = 2
+                while not ws.cell(row=row, column=4).value == id: row += 1
+                ws.cell(row=row, column=1).value = name
+                ws.cell(row=row, column=2).value = price
+                ws.cell(row=row, column=3).value = amount
+                ws.cell(row=row, column=4).value = id
+                wb.save(namePath)
+                return (True, f"Запчасть {sparePartType} с id: {id} успешно отредактирован!")
+            except Exception as e:
+                return (False, "Ошибка: " + str(e))
+
+
     def getSparePartTypes(self, brand, model):
         try:
             pathName = f"brands/{brand}/{model}.xlsx"
             if not path.exists(pathName):
                 return (False, "Бренд не найдены")
-            
             wb = load_workbook(pathName)
             sparePartTypes = wb.sheetnames
             if "Sheet" in sparePartTypes:sparePartTypes.remove("Sheet")
-
             return (True, sparePartTypes)            
         except Exception as e:
             return (False, "Ошибка: " + str(e))
